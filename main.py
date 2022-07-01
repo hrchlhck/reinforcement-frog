@@ -1,38 +1,37 @@
 #!/usr/bin/env python3
 
-import random
-import enum
 import os
 import pickle
 import numpy as np
 
 from typing import List
 
-Direction = enum.Enum('Direction', 'UP DOWN LEFT RIGHT')
-
 def save(obj, name):
     with open(name, mode='wb') as fp:
         fp.write(pickle.dumps(obj))
+    
+def load(name):
+    with open(name, 'rb') as fp:
+        return pickle.loads(fp.read())
 
 class Agent:
-    def __init__(self, epsilon: float, actions: List[Direction]) -> None:
+    def __init__(self, epsilon: float, actions: list) -> None:
         self.pos = (0, 0)
         self.epsilon = epsilon
         self.actions = actions
         self.explorations = 0
 
-    def get_action(self, Q: List):
+    def get_action(self, Q: List, state):
         i = np.random.random()
 
         # Explore
         if i <= self.epsilon:
             self.explorations += 1
-            return random.choice(self.actions), True
+            return np.random.choice(self.actions), True
 
         # Exploit best action
         # return max(enumerate(max(Q)), key=lambda x: x[1])[0] + 1, False
-
-        return self.actions[np.argmax(np.argmax(Q, axis=0))], False
+        return self.actions[np.argmax(Q[state,:])], False
 
     def __str__(self) -> str:
         return '\U0001F438'
@@ -87,22 +86,29 @@ class Board:
 
         return self.rows - r
 
-    def get_pos(self, direction: Direction):
+    def get_pos(self, direction: int):
         i, j = self.agent.pos
 
-        if direction == Direction.UP.value:
+        # up
+        if direction == 0:
             i += 1
-        elif direction == Direction.DOWN.value:
+        
+        # down
+        elif direction == 1:
             i -= 1
-        elif direction == Direction.LEFT.value:
+        
+        # left
+        elif direction == 2:
             j -= 1
-        elif direction == Direction.RIGHT.value:
+
+        # right
+        elif direction == 3:
             j += 1
         
-        if j <= 0:
+        if j < 0:
             j = 0
         
-        if i <= 0:
+        if i < 0:
             i = 0
         
         if j > self.columns-1:
@@ -114,7 +120,7 @@ class Board:
         return i, j
 
 
-    def move(self, direction: Direction):
+    def move(self, direction: int):
         i, j = self.agent.pos
         self.board[i][j] = '.'
 
@@ -129,18 +135,20 @@ class Board:
 
         return self.reward(), self.completed
 
-rows, columns = 7, 7
-gamma = 0.95
-alpha = 0.15
-epsilon = 0.1
-n_actions = len(Direction)
+rows, columns = 6, 6
+gamma = 0.5
+alpha = 0.1
+epsilon = 0.15
+actions = list(range(4))
+n_actions = len(actions)
 Q = np.zeros((rows*columns, n_actions))
-actions = [e.value for e in Direction]
+Q = load('qtable.t')
 
 try:
     gen = 1
     completed = 0
     explorations = 0
+    max_reward = -30000
 
     while True:
         state = 0
@@ -149,7 +157,7 @@ try:
 
         for new_state in range(rows * columns):
             os.system('clear')
-            action, exploration = a.get_action(Q)
+            action, exploration = a.get_action(Q, new_state)
             reward, c = b.move(action)
 
             if exploration:
@@ -159,6 +167,9 @@ try:
                 completed += 1
                 break
             
+            if reward > max_reward:
+                max_reward = reward
+
             ai = actions.index(action)
             qmax = np.max(Q[new_state, :])
             q = Q[state, ai] + alpha * (reward + gamma * qmax - Q[state, ai])
@@ -168,7 +179,8 @@ try:
             print('Generation', gen)
             print('Completed', completed)
             print('Explorations', explorations)
-            print('Accuracy', completed / gen)
+            print('Accuracy', completed / gen * 100)
+            print('Max. reward', max_reward)
 
             state = new_state
         gen +=1
