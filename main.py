@@ -84,25 +84,31 @@ class Board:
         # euclidean distance
         r = ((self.goal_pos[0] - self.agent.pos[0]) ** 2 + (self.goal_pos[1] - self.agent.pos[1]) ** 2) ** 0.5
         
+        if r == 0:
+            r = 1
+        
         if self.desired_moves > self.n_moves > self.desired_moves * 2:
-            return 30
+            return 30 / r
 
         if self.desired_moves > self.n_moves > self.desired_moves * 2 and r < 4:
-            return -r - 15
+            return 5 / r
+        
+        if self.n_moves <= self.desired_moves * 1.1:
+            return 75 / r
 
-        if self.n_moves <= self.desired_moves * 2 or self.agent.pos == self.goal_pos:
-            return 500
+        if self.n_moves == int(self.desired_moves)+1:
+            return 100 / r
+
+        if self.n_moves <= self.desired_moves * 1.5 or self.agent.pos == self.goal_pos:
+            return 70 / r
 
         if r < 2:
-            return 100
+            return  45 / r
 
         if self.last_move == current_direction or self.board[oldi][oldj] == '.':
-            return -r - 5
-
-        if r > 0:
-            return -r
+            return -5 * r
         
-        return r
+        return r 
 
     def get_pos(self, direction: int):
         i, j = self.agent.pos
@@ -156,9 +162,9 @@ class Board:
         return self.reward(direction, oldi ,oldj), self.completed
 
 if __name__ == '__main__':
-    rows, columns = 10, 15
-    gamma = 0.8
-    alpha = 0.2
+    rows, columns = 15, 15
+    gamma = 0.9
+    alpha = 0.15
     epsilon = 0.2
     actions = list(range(4))
     n_actions = len(actions)
@@ -178,7 +184,7 @@ if __name__ == '__main__':
 
         scores = []
         for new_state in range(rows * columns):
-            action, exploration = a.get_action(Q, new_state, gen-1)
+            action, exploration = a.get_action(Q, state, gen-1)
             reward, c = b.move(action)
 
             if exploration:
