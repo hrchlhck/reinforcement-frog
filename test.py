@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from settings import (
+from reinforcement_frog.settings import (
     rows, columns, 
     epsilon, actions,
     board_epsilon

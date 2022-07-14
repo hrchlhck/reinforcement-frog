@@ -3,7 +3,7 @@
 import pickle
 import numpy as np
 
-from settings import (
+from reinforcement_frog.settings import (
     rows, columns, 
     gamma, alpha, 
     epsilon, n_actions, 
@@ -11,7 +11,7 @@ from settings import (
     ACTIONS
 )
 
-from board import Agent, Board
+from reinforcement_frog.board import Agent, Board
 import matplotlib.pyplot as plt
 
 def save(obj, name):
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
         scores = []
         for new_state in range(rows * columns):
-            action, exploration = a.get_action(Q, b.board, state, gen-1)
+            action, exploration = a.action(Q, b.board, state, gen-1)
             reward, dist, c = b.move(action)
 
             if exploration:

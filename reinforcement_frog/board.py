@@ -1,53 +1,15 @@
-from typing import List
-
+from .agent import Agent
+from .settings import EMOJIS
 import numpy as np
 
-class Agent:
-    def __init__(self, epsilon: float, actions: list, exploration_limit: int) -> None:
-        self.pos = (0, 0)
-        self.epsilon = epsilon
-        self.actions = actions
-        self.explorations = 0
-        self.exploration_limit = exploration_limit
-
-    def get_action(self, Q: List, state: np.array, state_index: int, limit: int):
-        x, y = state.shape
-
-        actions = self.actions
-
-        if self.pos == (x - 1, y - 1):
-            actions = [0, 2]
-        elif self.pos == (0, y - 1):
-            actions = [0, 1, 3]
-        elif self.pos == (x - 1, 0):
-            actions = [0, 1, 2]
-        elif self.pos == (0, 0):
-            actions = [1, 2, 3]
-
-        i = np.random.uniform(0, 1)
-
-        # Explore
-        if i <= self.epsilon and limit < self.exploration_limit:
-            self.explorations += 1
-            return np.random.choice(actions), True
-
-        # Exploit best action
-        # return max(enumerate(max(Q)), key=lambda x: x[1])[0] + 1, False
-        _state = Q[state_index, :]
-        _state = _state[actions]
-        return actions[np.argmax(_state)], False
-
-    def __str__(self) -> str:
-        return '\U0001F438'
-
 class Board:
-    def __init__(self, rows: int, columns: int, agent: Agent, goal_randomness: float, random_agent_pos=False) -> None:
+    def __init__(self, rows: int, columns: int, agent: Agent, goal_randomness: float, random_agent_pos=False, emoji='objective') -> None:
         self.rows = rows
         self.columns = columns
         self.board = np.array([[' ' for _ in range(columns)] for _ in range(rows)])
         self.agent = agent
         self.completed = False
-        self.fruit = '\U0001F40C'
+        self.fruit = EMOJIS.get(emoji)
         self.n_moves = 0
         self.desired_moves = (rows ** 2 + columns ** 2) ** 0.5
         self.last_move = None

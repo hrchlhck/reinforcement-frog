@@ -15,9 +15,15 @@ The project was based on:
 - [matplotlib](https://github.com/matplotlib/matplotlib)
 
 ## Demo:
-![Demonstration](./demo.gif)
+![Demonstration](./assets/demo.gif)
 
 ## How to:
+### Preparing the python virtual environment
+```sh
+$ python3 -m venv venv
+$ source venv/bin/activate
+$ pip install -r requirements.txt
+```
 ### Training the agent
 ```sh
 $ chmod +x ./main.py
